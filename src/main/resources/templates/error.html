@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<div class="app-wrapper">
+    <aside th:replace="~{fragments/layout :: sidebar('none')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/layout :: topbar('Error')}"></header>
+
+        <main class="container-fluid p-3 p-lg-4">
+            <div class="card text-center mx-auto" style="max-width: 640px;">
+                <div class="card-body py-5">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 3rem;"></i>
+                    <h2 class="h4 mt-3">
+                        <span th:text="${status}">500</span> -
+                        <span th:text="${error}">Error</span>
+                    </h2>
+                    <!-- Only friendly messages are shown here; stack traces are never displayed -->
+                    <p class="text-muted" th:if="${message != null and !#strings.isEmpty(message)}" th:text="${message}">
+                        Message
+                    </p>
+                    <p class="text-muted" th:unless="${message != null and !#strings.isEmpty(message)}"
+                       th:text="${status == 404} ? 'The page you are looking for does not exist.' : 'Something went wrong while processing your request. Please try again.'">
+                        Something went wrong.
+                    </p>
+                    <a th:href="@{/}" class="btn btn-primary mt-2"><i class="bi bi-house me-1"></i>Go to Dashboard</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

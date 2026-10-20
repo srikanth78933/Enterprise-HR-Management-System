@@ -1,0 +1,135 @@
+/* Blue and white enterprise theme */
+:root {
+    --app-primary: #0d6efd;
+    --app-primary-dark: #0b2e59;
+    --app-sidebar-link: #c9d7ec;
+    --app-background: #f4f7fb;
+}
+
+body {
+    background-color: var(--app-background);
+    min-height: 100vh;
+}
+
+/* ---------- Layout ---------- */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex-grow: 1;
+    min-width: 0; /* allows tables to scroll instead of stretching the page */
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    --bs-offcanvas-width: 250px;
+    --bs-offcanvas-color: #ffffff;
+}
+
+/* Bootstrap makes .offcanvas-lg transparent on large screens; keep the blue background */
+.sidebar.offcanvas-lg {
+    background-color: var(--app-primary-dark) !important;
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        width: 250px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+.sidebar .offcanvas-body {
+    padding: 0;
+}
+
+.sidebar-brand {
+    display: block;
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.sidebar-brand:hover {
+    color: #ffffff;
+}
+
+.sidebar .nav-link {
+    color: var(--app-sidebar-link);
+    padding: 0.7rem 1.5rem;
+    border-left: 4px solid transparent;
+}
+
+.sidebar .nav-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(13, 110, 253, 0.35);
+    border-left-color: #6ea8fe;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+    min-height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+/* ---------- Dashboard cards ---------- */
+.stat-card {
+    border: none;
+    border-left: 5px solid var(--app-primary);
+}
+
+.stat-card .stat-icon {
+    font-size: 2.2rem;
+    opacity: 0.8;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.stat-card.stat-success { border-left-color: #198754; }
+.stat-card.stat-info    { border-left-color: #0dcaf0; }
+.stat-card.stat-muted   { border-left-color: #6c757d; }
+
+/* ---------- Cards and tables ---------- */
+.card {
+    box-shadow: 0 1px 3px rgba(11, 46, 89, 0.08);
+}
+
+.card-header {
+    background-color: #ffffff;
+    font-weight: 600;
+}
+
+.table thead th {
+    background-color: #e9f1fe;
+    color: var(--app-primary-dark);
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.details-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}

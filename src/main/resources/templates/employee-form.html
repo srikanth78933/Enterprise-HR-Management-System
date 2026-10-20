@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${employee.id == null} ? 'Add Employee' : 'Edit Employee')}"></head>
+<body>
+<div class="app-wrapper">
+    <aside th:replace="~{fragments/layout :: sidebar(${employee.id == null} ? 'employee-new' : 'employees')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/layout :: topbar(${employee.id == null} ? 'Add Employee' : 'Edit Employee')}"></header>
+
+        <main class="container-fluid p-3 p-lg-4">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-person-vcard me-2"></i>
+                    <span th:text="${employee.id == null} ? 'New Employee' : 'Edit Employee'">Employee</span>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#fields.hasErrors('${employee.*}')}" class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the highlighted fields.
+                    </div>
+
+                    <form th:action="${employee.id == null} ? @{/employees} : @{/employees/{id}(id=${employee.id})}"
+                          th:object="${employee}" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="employeeCode" class="form-label">Employee ID <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{employeeCode}" class="form-control" th:errorclass="is-invalid"
+                                       placeholder="EMP007" maxlength="20" required>
+                                <div class="invalid-feedback" th:errors="*{employeeCode}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{firstName}" class="form-control" th:errorclass="is-invalid"
+                                       maxlength="50" required>
+                                <div class="invalid-feedback" th:errors="*{firstName}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{lastName}" class="form-control" th:errorclass="is-invalid"
+                                       maxlength="50" required>
+                                <div class="invalid-feedback" th:errors="*{lastName}">Error</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" th:field="*{email}" class="form-control" th:errorclass="is-invalid"
+                                       placeholder="name@example.com" maxlength="100" required>
+                                <div class="invalid-feedback" th:errors="*{email}">Error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" th:field="*{phone}" class="form-control" th:errorclass="is-invalid"
+                                       placeholder="+91 98765 43210" maxlength="20">
+                                <div class="invalid-feedback" th:errors="*{phone}">Error</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                                <!-- The selected department ID is converted to a Department by config/DepartmentConverter -->
+                                <select id="department" name="department" class="form-select"
+                                        th:classappend="${#fields.hasErrors('department')} ? 'is-invalid'" required>
+                                    <option value="">-- Select department --</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:value="${dept.id}"
+                                            th:text="${dept.name}"
+                                            th:selected="${employee.department != null and employee.department.id == dept.id}">IT</option>
+                                </select>
+                                <div class="invalid-feedback" th:errors="*{department}">Error</div>
+                                <div class="form-text" th:if="${#lists.isEmpty(departments)}">
+                                    No departments exist yet. <a th:href="@{/departments/new}">Create a department</a> first.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="jobTitle" class="form-label">Job Title <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{jobTitle}" class="form-control" th:errorclass="is-invalid"
+                                       maxlength="100" required>
+                                <div class="invalid-feedback" th:errors="*{jobTitle}">Error</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="joiningDate" class="form-label">Joining Date <span class="text-danger">*</span></label>
+                                <input type="date" th:field="*{joiningDate}" class="form-control" th:errorclass="is-invalid" required>
+                                <div class="invalid-feedback" th:errors="*{joiningDate}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="salary" class="form-label">Salary <span class="text-danger">*</span></label>
+                                <input type="number" th:field="*{salary}" class="form-control" th:errorclass="is-invalid"
+                                       min="0" step="0.01" required>
+                                <div class="invalid-feedback" th:errors="*{salary}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select th:field="*{status}" class="form-select" th:errorclass="is-invalid" required>
+                                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}">ACTIVE</option>
+                                </select>
+                                <div class="invalid-feedback" th:errors="*{status}">Error</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>
+                                <span th:text="${employee.id == null} ? 'Save Employee' : 'Update Employee'">Save</span>
+                            </button>
+                            <a th:href="${employee.id == null} ? @{/employees} : @{/employees/{id}(id=${employee.id})}"
+                               class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

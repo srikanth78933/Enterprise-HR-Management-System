@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${department.id == null} ? 'Add Department' : 'Edit Department')}"></head>
+<body>
+<div class="app-wrapper">
+    <aside th:replace="~{fragments/layout :: sidebar(${department.id == null} ? 'department-new' : 'departments')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/layout :: topbar(${department.id == null} ? 'Add Department' : 'Edit Department')}"></header>
+
+        <main class="container-fluid p-3 p-lg-4">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="card" style="max-width: 720px;">
+                <div class="card-header">
+                    <i class="bi bi-building me-2"></i>
+                    <span th:text="${department.id == null} ? 'New Department' : 'Edit Department #' + ${department.id}">Department</span>
+                </div>
+                <div class="card-body">
+                    <form th:action="${department.id == null} ? @{/departments} : @{/departments/{id}(id=${department.id})}"
+                          th:object="${department}" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Department Name <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{name}" class="form-control" th:errorclass="is-invalid"
+                                   placeholder="e.g. Marketing" maxlength="100" required>
+                            <div class="invalid-feedback" th:errors="*{name}">Error</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea th:field="*{description}" class="form-control" th:errorclass="is-invalid"
+                                      rows="3" maxlength="500"></textarea>
+                            <div class="invalid-feedback" th:errors="*{description}">Error</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>
+                                <span th:text="${department.id == null} ? 'Save Department' : 'Update Department'">Save</span>
+                            </button>
+                            <a th:href="@{/departments}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

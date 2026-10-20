@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Employees')}"></head>
+<body>
+<div class="app-wrapper">
+    <aside th:replace="~{fragments/layout :: sidebar('employees')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/layout :: topbar('Employees')}"></header>
+
+        <main class="container-fluid p-3 p-lg-4">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Search and filter -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form th:action="@{/employees}" method="get" class="row g-2 align-items-end">
+                        <div class="col-12 col-md-5">
+                            <label for="keyword" class="form-label small text-muted mb-1">Search</label>
+                            <input type="text" id="keyword" name="keyword" class="form-control"
+                                   placeholder="Name or Employee ID" th:value="${keyword}">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="departmentId" class="form-label small text-muted mb-1">Department</label>
+                            <select id="departmentId" name="departmentId" class="form-select">
+                                <option value="">All departments</option>
+                                <option th:each="dept : ${departments}"
+                                        th:value="${dept.id}"
+                                        th:text="${dept.name}"
+                                        th:selected="${dept.id == departmentId}">IT</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <a th:href="@{/employees}" class="btn btn-outline-secondary">Clear</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Employee table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="bi bi-person-badge me-2"></i>Employees
+                        <span class="badge text-bg-primary ms-1" th:text="${#lists.size(employees)}">0</span>
+                    </span>
+                    <a th:href="@{/employees/new}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-person-plus me-1"></i>Add Employee
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Job Title</th>
+                                <th>Joining Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="emp : ${employees}">
+                                <td th:text="${emp.employeeCode}">EMP001</td>
+                                <td th:text="${emp.fullName}">Name</td>
+                                <td th:text="${emp.email}">email@example.com</td>
+                                <td th:text="${emp.department.name}">IT</td>
+                                <td th:text="${emp.jobTitle}">Engineer</td>
+                                <td class="text-nowrap" th:text="${#temporals.format(emp.joiningDate, 'dd MMM yyyy')}">01 Jan 2024</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${emp.status.name() == 'ACTIVE'} ? 'text-bg-success' : 'text-bg-secondary'"
+                                          th:text="${emp.status}">ACTIVE</span>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a th:href="@{/employees/{id}(id=${emp.id})}" class="btn btn-sm btn-outline-primary"
+                                       title="View"><i class="bi bi-eye"></i></a>
+                                    <a th:href="@{/employees/{id}/edit(id=${emp.id})}" class="btn btn-sm btn-outline-secondary"
+                                       title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <form th:action="@{/employees/{id}/delete(id=${emp.id})}" method="post" class="d-inline"
+                                          th:attr="data-confirm=|Are you sure you want to delete employee ${emp.fullName} (${emp.employeeCode})?|">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(employees)}">
+                                <td colspan="8" class="text-center text-muted py-4">No employees found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

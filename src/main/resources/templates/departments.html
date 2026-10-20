@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Departments')}"></head>
+<body>
+<div class="app-wrapper">
+    <aside th:replace="~{fragments/layout :: sidebar('departments')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/layout :: topbar('Departments')}"></header>
+
+        <main class="container-fluid p-3 p-lg-4">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="bi bi-building me-2"></i>Departments
+                        <span class="badge text-bg-primary ms-1" th:text="${#lists.size(departments)}">0</span>
+                    </span>
+                    <a th:href="@{/departments/new}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>Add Department
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Department ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Employees</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="dept : ${departments}"
+                                th:with="empCount=${employeeCounts.get(dept.id) != null ? employeeCounts.get(dept.id) : 0}">
+                                <td th:text="${dept.id}">1</td>
+                                <td class="fw-semibold" th:text="${dept.name}">IT</td>
+                                <td th:text="${dept.description != null and !#strings.isEmpty(dept.description)} ? ${dept.description} : '-'">Description</td>
+                                <td>
+                                    <a th:href="@{/employees(departmentId=${dept.id})}" class="badge text-bg-light text-decoration-none"
+                                       th:text="${empCount}">0</a>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a th:href="@{/departments/{id}/edit(id=${dept.id})}" class="btn btn-sm btn-outline-secondary"
+                                       title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <form th:action="@{/departments/{id}/delete(id=${dept.id})}" method="post" class="d-inline"
+                                          th:attr="data-confirm=|Are you sure you want to delete department ${dept.name}?|">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                th:title="${empCount > 0} ? 'Departments with employees cannot be deleted' : 'Delete'">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(departments)}">
+                                <td colspan="5" class="text-center text-muted py-4">No departments found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>A department can be deleted only when it has no employees.
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
