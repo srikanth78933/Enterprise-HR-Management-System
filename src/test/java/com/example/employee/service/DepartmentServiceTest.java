@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -30,6 +31,35 @@ class DepartmentServiceTest {
 
     @InjectMocks
     private DepartmentService departmentService;
+
+    @Test
+    void createSavesTrimmedName() {
+        when(departmentRepository.existsByNameIgnoreCase("Legal")).thenReturn(false);
+        when(departmentRepository.save(any(Department.class))).thenAnswer(invocation -> {
+            Department saved = invocation.getArgument(0);
+            saved.setId(9L);
+            return saved;
+        });
+
+        Department saved = departmentService.create(new Department("  Legal ", "Legal team"));
+
+        assertThat(saved.getId()).isEqualTo(9L);
+        assertThat(saved.getName()).isEqualTo("Legal");
+    }
+
+    @Test
+    void updateChangesNameAndDescription() {
+        Department existing = new Department("Legal", "Old description");
+        existing.setId(9L);
+        when(departmentRepository.findById(9L)).thenReturn(Optional.of(existing));
+        when(departmentRepository.existsByNameIgnoreCaseAndIdNot("Legal & Compliance", 9L)).thenReturn(false);
+        when(departmentRepository.save(existing)).thenReturn(existing);
+
+        Department updated = departmentService.update(9L, new Department("Legal & Compliance", "New description"));
+
+        assertThat(updated.getName()).isEqualTo("Legal & Compliance");
+        assertThat(updated.getDescription()).isEqualTo("New description");
+    }
 
     @Test
     void deleteRemovesDepartmentWithoutEmployees() {
