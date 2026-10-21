@@ -6,6 +6,23 @@ A simple employee and department management web application built with **Java 21
 Everything is done from the browser: dashboard, employees (add / view / edit / delete / search / filter)
 and departments (add / list / edit / delete).
 
+## The four repositories
+
+This repository is the application. It is built, deployed and monitored by three companion repositories:
+
+| Repository | Purpose |
+|------------|---------|
+| **Enterprise-HR-Management-System** (this one) | Spring Boot application, tests |
+| [enterprise-hr-portal-infra](https://github.com/srikanth78933/enterprise-hr-portal-infra) | Terraform: VPC, EKS, RDS, IRSA, add-ons, ELK server (dev / prod), Jenkins pipeline |
+| [enterprise-hr-portal-deploy](https://github.com/srikanth78933/enterprise-hr-portal-deploy) | Jenkins CI/CD, Dockerfile, Helm chart: Maven → SonarQube → Nexus → Docker → Trivy → Docker Hub → EKS |
+| [enterprise-hr-portal-monitoring](https://github.com/srikanth78933/enterprise-hr-portal-monitoring) | ELK on EC2, Filebeat + Metricbeat on EKS, Jenkins pipeline |
+
+```
+infra pipeline ──► AWS (VPC, EKS, RDS, ELK EC2)
+deploy pipeline ─► builds this repo ─► Docker Hub ─► Helm ─► EKS pods ─► RDS
+monitoring pipeline ─► ELK on EC2 ◄── Filebeat / Metricbeat on EKS ◄── app logs
+```
+
 ## Features
 
 | Area        | What you can do |
@@ -31,7 +48,7 @@ Enterprise-HR-Management-System/
     ├── main/
     │   ├── java/com/example/employee/
     │   │   ├── EmployeeApplication.java   Application entry point
-    │   │   ├── config/                    DepartmentConverter (form select -> Department)
+    │   │   ├── config/                    DepartmentConverter, RequestLoggingFilter
     │   │   ├── controller/                MVC controllers + GlobalExceptionHandler
     │   │   ├── entity/                    Employee, Department, EmployeeStatus
     │   │   ├── exception/                 Simple application exceptions
@@ -42,7 +59,7 @@ Enterprise-HR-Management-System/
     │       ├── db/migration/              Flyway SQL scripts (V1 schema, V2 sample data)
     │       ├── static/css, static/js      Theme stylesheet, delete confirmation script
     │       └── templates/                 Thymeleaf pages + fragments/layout.html
-    └── test/java/com/example/employee/service/   JUnit 5 + Mockito service tests
+    └── test/java/com/example/employee/   JUnit 5 + Mockito tests (services, request logging)
 ```
 
 ## Configuration
@@ -147,6 +164,25 @@ The JAR uses the same environment variables. To use another port:
 
 The unit tests mock the repositories, so they do not need a database.
 
+**Coverage:** JaCoCo runs with the tests. `./mvnw package` (or `./mvnw test`) writes
+`target/site/jacoco/index.html` (open it in a browser) and `target/site/jacoco/jacoco.xml`,
+which SonarQube reads automatically. The SonarQube quality gate requires 80% coverage on new code,
+so add tests together with new code.
+
+## Logging
+
+The application logs to the console (stdout), which Kubernetes collects and Filebeat ships to ELK.
+
+| Logger | Level | Example |
+|--------|-------|---------|
+| `RequestLoggingFilter` | INFO | `GET /employees -> 200 (12 ms)` (one line per page; health checks and static files skipped) |
+| `EmployeeService` | INFO | `Created employee EMP007 (id=7, department=IT)`, `Updated …`, `Deleted …` |
+| `DepartmentService` | INFO / WARN | `Created department Legal (id=6)`; WARN `Blocked delete of department IT (id=1): it has 1 employee(s)` |
+| `GlobalExceptionHandler` | WARN | `Resource not found: Employee not found with ID 99` |
+
+Log levels can be changed without code changes through environment variables, for example
+`LOGGING_LEVEL_COM_EXAMPLE_EMPLOYEE=DEBUG` (the deploy repo sets this per environment).
+
 ## Pages and URLs
 
 | Page              | URL |
@@ -163,9 +199,11 @@ The unit tests mock the repositories, so they do not need a database.
 Create, update and delete are standard HTML form `POST`s to the same URLs
 (`/employees`, `/employees/{id}`, `/employees/{id}/delete`, and the same for `/departments`).
 
-## Connecting to AWS RDS PostgreSQL later
+## Running on AWS (EKS + RDS)
 
-No code changes are needed. Point the environment variables at the RDS instance:
+The deploy pipeline runs the same JAR in a container on EKS. No code changes are needed: the Helm chart
+sets the same environment variables, with `DB_USERNAME` / `DB_PASSWORD` read from AWS Secrets Manager.
+To point a local run at RDS instead:
 
 ```bash
 export DB_HOST=mydb.xxxxxxxx.ap-south-1.rds.amazonaws.com
