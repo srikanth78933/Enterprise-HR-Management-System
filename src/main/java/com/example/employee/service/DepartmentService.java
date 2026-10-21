@@ -6,6 +6,8 @@ import com.example.employee.exception.OperationNotAllowedException;
 import com.example.employee.exception.ResourceNotFoundException;
 import com.example.employee.repository.DepartmentRepository;
 import com.example.employee.repository.EmployeeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ import java.util.Map;
 @Service
 @Transactional(readOnly = true)
 public class DepartmentService {
+
+    private static final Logger log = LoggerFactory.getLogger(DepartmentService.class);
 
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
@@ -58,7 +62,9 @@ public class DepartmentService {
         }
         department.setId(null);
         department.setName(name);
-        return departmentRepository.save(department);
+        Department saved = departmentRepository.save(department);
+        log.info("Created department {} (id={})", saved.getName(), saved.getId());
+        return saved;
     }
 
     @Transactional
@@ -70,7 +76,9 @@ public class DepartmentService {
         }
         existing.setName(name);
         existing.setDescription(form.getDescription());
-        return departmentRepository.save(existing);
+        Department saved = departmentRepository.save(existing);
+        log.info("Updated department {} (id={})", saved.getName(), saved.getId());
+        return saved;
     }
 
     @Transactional
@@ -78,9 +86,12 @@ public class DepartmentService {
         Department department = findById(id);
         long employeeCount = employeeRepository.countByDepartmentId(id);
         if (employeeCount > 0) {
+            log.warn("Blocked delete of department {} (id={}): it has {} employee(s)",
+                    department.getName(), id, employeeCount);
             throw new OperationNotAllowedException("Cannot delete department '" + department.getName()
                     + "' because it has " + employeeCount + " employee(s). Move or delete them first.");
         }
         departmentRepository.delete(department);
+        log.info("Deleted department {} (id={})", department.getName(), id);
     }
 }

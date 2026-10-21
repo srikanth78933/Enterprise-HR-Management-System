@@ -5,6 +5,8 @@ import com.example.employee.entity.EmployeeStatus;
 import com.example.employee.exception.DuplicateValueException;
 import com.example.employee.exception.ResourceNotFoundException;
 import com.example.employee.repository.EmployeeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class EmployeeService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmployeeService.class);
 
     private final EmployeeRepository employeeRepository;
 
@@ -60,7 +64,10 @@ public class EmployeeService {
             throw new DuplicateValueException("email", "Email '" + employee.getEmail() + "' is already in use");
         }
         employee.setId(null);
-        return employeeRepository.save(employee);
+        Employee saved = employeeRepository.save(employee);
+        log.info("Created employee {} (id={}, department={})",
+                saved.getEmployeeCode(), saved.getId(), saved.getDepartment().getName());
+        return saved;
     }
 
     @Transactional
@@ -84,13 +91,16 @@ public class EmployeeService {
         existing.setJoiningDate(form.getJoiningDate());
         existing.setSalary(form.getSalary());
         existing.setStatus(form.getStatus());
-        return employeeRepository.save(existing);
+        Employee saved = employeeRepository.save(existing);
+        log.info("Updated employee {} (id={}, status={})", saved.getEmployeeCode(), saved.getId(), saved.getStatus());
+        return saved;
     }
 
     @Transactional
     public void delete(Long id) {
         Employee employee = findById(id);
         employeeRepository.delete(employee);
+        log.info("Deleted employee {} (id={})", employee.getEmployeeCode(), id);
     }
 
     // Trims text input and stores employee IDs in upper case and emails in lower case
